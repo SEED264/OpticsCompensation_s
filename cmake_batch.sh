@@ -28,7 +28,7 @@ case $mode in
 "msvc")
     cmake_prefix_path=""
 
-    cmake .. \
+    cmake .. -G"Visual Studio 16 2019" -A Win32 \
         -DCMAKE_PREFIX_PATH=$cmake_prefix_path \
         -DCMAKE_INSTALL_PREFIX=$cmake_install_path \
         -DLUA_INCLUDE_DIR=$lua_include_dir \
