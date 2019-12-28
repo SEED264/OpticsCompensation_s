@@ -19,6 +19,10 @@ cd $script_dir"/build"
 # Install dir
 cmake_install_path="./bin"
 
+# Lua dirs
+lua_include_dir=""
+lua_library_dir=""
+
 # Launch cmake
 case $mode in
 "msvc")
@@ -26,7 +30,9 @@ case $mode in
 
     cmake .. \
         -DCMAKE_PREFIX_PATH=$cmake_prefix_path \
-        -DCMAKE_INSTALL_PREFIX=$cmake_install_path
+        -DCMAKE_INSTALL_PREFIX=$cmake_install_path \
+        -DLUA_INCLUDE_DIR=$lua_include_dir \
+        -DLUA_LIBRARY_DIR=$lua_library_dir
 ;;
 
 "msys")
@@ -34,7 +40,9 @@ case $mode in
 
     cmake .. -G"MSYS Makefiles" \
         -DCMAKE_PREFIX_PATH=$cmake_prefix_path \
-        -DCMAKE_INSTALL_PREFIX=$cmake_install_path
+        -DCMAKE_INSTALL_PREFIX=$cmake_install_path\
+        -DLUA_INCLUDE_DIR=$lua_include_dir \
+        -DLUA_LIBRARY_DIR=$lua_library_dir
 ;;
 
 "clean")
