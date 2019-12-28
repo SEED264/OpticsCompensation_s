@@ -3,7 +3,7 @@
 if [ $# -gt 0 ]; then
     mode=$1
 else
-    mode=""
+    mode="default"
 fi
 
 # Move current directory to build directory
