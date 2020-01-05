@@ -1,2 +1,2 @@
 *       text=auto
-*.anm   text eof=crlf
+*.anm   text eof=crlf encoding=cp932
