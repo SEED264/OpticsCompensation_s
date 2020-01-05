@@ -1,4 +1,5 @@
---track0:R,0.00,1.00,1.00,0.01
+--track0:amount,-100.00,100.00,0.00,0.01
+--dialog:AA(’MŒ^Žž)/chk,local aa=1;
 
 require("OpticsCompensation_s")
-OpticsCompensation_s.OpticsCompensation()
+OpticsCompensation_s.OpticsCompensation(obj.track0, aa)

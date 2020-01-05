@@ -9,7 +9,10 @@ set(LUA_LIBRARY_DIR "/" CACHE PATH "Lua include dir")
 
 add_library(${PROJECT_NAME} SHARED)
 target_sources(${PROJECT_NAME} PRIVATE src/optics_compensation_s.cc)
+target_sources(${PROJECT_NAME} PRIVATE src/cl_manager.cc)
+target_sources(${PROJECT_NAME} PRIVATE src/cl_kernel.cc)
 
+target_include_directories(${PROJECT_NAME} PRIVATE src)
 target_include_directories(${PROJECT_NAME} PRIVATE AUL_Utils/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${LUA_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCL_INCLUDE_DIRS})
