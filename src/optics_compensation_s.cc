@@ -27,6 +27,11 @@ int OpticsCompensation(lua_State *L) {
     if (arg_num >=2)
         parameter.anti_aliasing = static_cast<bool>(lua_tointeger(L, 2));
 
+    if (arg_num >= 4) {
+        parameter.center_pos.x = static_cast<float>(lua_tonumber(L, 3));
+        parameter.center_pos.y = static_cast<float>(lua_tonumber(L, 4));
+    }
+
     if (!parameter.amount)
         return 0;
     if (parameter.amount < 0) {

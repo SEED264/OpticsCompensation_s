@@ -1,5 +1,11 @@
 --track0:amount,-100.00,100.00,0.00,0.01
---dialog:AA(íMå^éû)/chk,local aa=1;
+--track1:X,-5000.0,5000.0,0.0,0.1
+--track2:Y,-5000.0,5000.0,0.0,0.1
+--dialog:AA(íMå^éû)/chk,local aa=1; íÜêSì_,opticscompensation_s_center={0,0};
+
+obj.setanchor("opticscompensation_s_center", 1)
 
 require("OpticsCompensation_s")
-OpticsCompensation_s.OpticsCompensation(obj.track0, aa)
+OpticsCompensation_s.OpticsCompensation(obj.track0, aa,
+    opticscompensation_s_center[1] + obj.track1,
+    opticscompensation_s_center[2] + obj.track2)
