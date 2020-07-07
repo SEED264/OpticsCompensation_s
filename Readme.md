@@ -1,5 +1,5 @@
 # OpticsCompensation_s
-![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)
+[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)](LICENSE)
 
 ### ※ このエフェクトはOpenCLを使用しているため、対応しているデバイスをお持ちでない場合は動作しません。
 
