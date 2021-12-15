@@ -1,4 +1,7 @@
 #include "cl_manager.h"
+#include "debug_helper.h"
+
+/* CLPlatformManager */
 
 CLPlatformManager::CLPlatformManager() :
     selected_index_(0) {
@@ -22,6 +25,8 @@ std::string CLPlatformManager::GetPlatformName(int platform_index) {
 std::string CLPlatformManager::GetVendorName(int platform_index) {
     return platforms_[platform_index].getInfo<CL_PLATFORM_VENDOR>();
 }
+
+/* CLDeviceManager */
 
 CLDeviceManager::CLDeviceManager(cl_device_type device_type, cl::Platform *platform) :
     selected_index_(0),
@@ -67,6 +72,8 @@ std::string CLDeviceManager::GetDeviceVendor(int device_index) {
     return devices_[device_index].getInfo<CL_DEVICE_VENDOR>();
 }
 
+/* CLContextManager */
+
 CLContextManager::CLContextManager(const cl::Device *device) {
     if (device)
         context_ = CreateContextFromDevice(device);
@@ -86,6 +93,8 @@ cl::Context* CLContextManager::CreateContextFromDeviceType(cl_device_type device
     context_ = new cl::Context(device_type, nullptr, nullptr, nullptr, err);
     return context_;
 }
+
+/* CLCommandQueueManager */
 
 CLCommandQueueManager::CLCommandQueueManager(const cl::Context *context) :
     command_queue_(nullptr) {
@@ -158,6 +167,7 @@ void CLCommandQueueManager::FillImage2D(const cl::Image2D &image, cl_float4 fill
     command_queue_->enqueueFillImage(image, fill_color, origin, region);
 }
 
+/* CLProgramManager */
 
 CLProgramManager::CLProgramManager(const cl::Context *context, const std::string &source, bool build) {
     program_ = new cl::Program(*context, source, build);
@@ -172,6 +182,8 @@ void CLProgramManager::Build() {
     program_->build();
 }
 
+/* CLKernelManager */
+
 CLKernelManager::CLKernelManager(const cl::Program *program, const std::string kernel_name) :
     kernel_name_(kernel_name) {
     kernel_ = new cl::Kernel(*program, kernel_name_.c_str());
@@ -181,9 +193,15 @@ void CLKernelManager::SetCommandQueue(cl::CommandQueue *command_queue) {
     command_queue_ = command_queue;
 }
 
+/* OpenCLManager */
+
 OpenCLManager::OpenCLManager(const std::string &kernel_source) {
     context_manager_ = new CLContextManager(CL_DEVICE_TYPE_GPU);
     cl::Context *context = context_manager_->GetContext();
+
+    // Print context info when built in debug config
+    DebugPrintContextInfo(*context);
+
     device_manager_ = new CLDeviceManager(context_manager_->GetContext());
     program_manager_ = new CLProgramManager(context, kernel_source, true);
     command_queue_manager_ = new CLCommandQueueManager(context);
