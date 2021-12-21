@@ -1,10 +1,20 @@
 #!/bin/sh
 
-if [ $# -gt 0 ]; then
-    mode=$1
-else
-    mode="default"
-fi
+shopt -s nocasematch
+
+mode="default"
+config="Release"
+for OPT in "$@"
+do
+    case $OPT in
+        debug|release)
+            config=$OPT
+        ;;
+        build|rebuild|install)
+            mode=$OPT
+        ;;
+    esac
+done
 
 # Move current directory to build directory
 script_dir=`dirname $0`
@@ -18,15 +28,15 @@ cd $script_dir"/build"
 
 case $mode in
 "build")
-    MSBuild.exe ./ALL_BUILD.vcxproj -t:Build -p:Configuration=Release -p:Platform="Win32" -v:m -nologo
+    MSBuild.exe ./ALL_BUILD.vcxproj -t:Build -p:Configuration=$config -p:Platform="Win32" -v:m -nologo
 ;;
 
 "rebuild")
-    MSBuild.exe ./ALL_BUILD.vcxproj -t:Rebuild -p:Configuration=Release -p:Platform="Win32" -v:m -nologo
+    MSBuild.exe ./ALL_BUILD.vcxproj -t:Rebuild -p:Configuration=$config -p:Platform="Win32" -v:m -nologo
 ;;
 
 "install")
-    MSBuild.exe ./INSTALL.vcxproj -t:Build -p:Configuration=Release -p:Platform="Win32" -v:m -nologo
+    MSBuild.exe ./INSTALL.vcxproj -t:Build -p:Configuration=$config -p:Platform="Win32" -v:m -nologo
 ;;
 
 *)
