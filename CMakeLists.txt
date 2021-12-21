@@ -26,7 +26,8 @@ target_link_directories(${PROJECT_NAME} PRIVATE ${LUA_LIBRARY_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCL_LIBRARIES} ${OpenCV_LIBS} lua51)
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-    target_compile_options(${PROJECT_NAME} PRIVATE /source-charset:utf-8 /MT)
+    target_compile_options(${PROJECT_NAME} PRIVATE /source-charset:utf-8
+        $<IF:$<CONFIG:Debug>,/MTd,/MT>)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -stdlib=libc++ -m32)
     target_link_options(${PROJECT_NAME} PRIVATE -m32)

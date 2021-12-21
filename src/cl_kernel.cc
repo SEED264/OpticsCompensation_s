@@ -90,3 +90,49 @@ void MSBarrelKernelManager::CallKernel(cl::Image2D &in_image, cl::Image2D &out_i
     cl::NDRange local(block_size, block_size, 1);
     command_queue_->enqueueNDRangeKernel(*kernel_, cl::NDRange(0, 0, 0), global, local);
 }
+
+PremultKernelManager::PremultKernelManager(const::cl::Program *program, cl::CommandQueue *command_queue) :
+    CLKernelManager(program, "Premult") {
+    SetCommandQueue(command_queue);
+}
+
+void PremultKernelManager::CallPremult(cl::Image2D &in_image, cl::Image2D &out_image, int w, int h) {
+    cl_int2 image_size = {w, h};
+
+    kernel_->setArg(0, in_image);
+    kernel_->setArg(1, out_image);
+    kernel_->setArg(2, image_size);
+
+    int block_size = 16;
+    cl::NDRange global(
+        static_cast<std::size_t>(std::ceil(w / static_cast<float>(block_size))) * block_size,
+        static_cast<std::size_t>(std::ceil(h / static_cast<float>(block_size))) * block_size,
+        1
+    );
+    cl::NDRange local(block_size, block_size, 1);
+
+    command_queue_->enqueueNDRangeKernel(*kernel_, cl::NDRange(0, 0, 0), global, local);
+}
+
+UnpremultKernelManager::UnpremultKernelManager(const::cl::Program *program, cl::CommandQueue *command_queue) :
+    CLKernelManager(program, "Unpremult") {
+    SetCommandQueue(command_queue);
+}
+
+void UnpremultKernelManager::CallUnpremult(cl::Image2D &in_image, cl::Image2D &out_image, int w, int h) {
+    cl_int2 image_size = {w, h};
+
+    kernel_->setArg(0, in_image);
+    kernel_->setArg(1, out_image);
+    kernel_->setArg(2, image_size);
+
+    int block_size = 16;
+    cl::NDRange global(
+        static_cast<std::size_t>(std::ceil(w / static_cast<float>(block_size))) * block_size,
+        static_cast<std::size_t>(std::ceil(h / static_cast<float>(block_size))) * block_size,
+        1
+    );
+    cl::NDRange local(block_size, block_size, 1);
+
+    command_queue_->enqueueNDRangeKernel(*kernel_, cl::NDRange(0, 0, 0), global, local);
+}

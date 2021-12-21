@@ -55,7 +55,7 @@ public:
     CLContextManager(cl_device_type device_type);
 
     cl::Context* CreateContextFromDevice(const cl::Device *device);
-    cl::Context* CreateContextFromDeviceType(cl_device_type device_type, cl_int *err = nullptr);
+    cl::Context* CreateContextFromDeviceType(cl_device_type device_type);
 
     cl::Context* GetContext() const { return context_; }
 

@@ -9,7 +9,7 @@
 
 template<typename... T>
 void OutDebugInfo(T... out_info) {
-    aut::DebugPrint(out_info);
+    aut::DebugPrint(out_info...);
 }
 
 #else

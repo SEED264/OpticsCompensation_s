@@ -4,6 +4,8 @@
 #include <lua.hpp>
 #include "cl_manager.h"
 #include "cl_kernel.h"
+#include "exception.h"
+#include "out_debug.h"
 #include "parameter.h"
 #include "stopwatch.h"
 
@@ -16,8 +18,11 @@ static OpenCLManager *opencl_manager = nullptr;
 static SpoolKernelManager *spool_kernel_manager = nullptr;
 static BarrelKernelManager *barrel_kernel_manager = nullptr;
 static MSBarrelKernelManager *ms_barrel_kernel_manager = nullptr;
+static PremultKernelManager *premult_kernel_manager = nullptr;
+static UnpremultKernelManager *unpremult_kernel_manager = nullptr;
 
 bool first_time = true;
+bool use_opencl = true;
 
 int OpticsCompensation(lua_State *L) {
     StopWatch sw(true);
@@ -43,54 +48,70 @@ int OpticsCompensation(lua_State *L) {
     aut::Size2D image_size;
     aut::getpixeldata(L, &image_data, &image_size);
 
-    if (!opencl_manager)
-        opencl_manager = new OpenCLManager(kernel_source);
-    cl::Context *con = opencl_manager->GetContext();
-    CLCommandQueueManager *cqman = opencl_manager->GetCommandQueueManager();
-
-    if (!spool_kernel_manager)
-        spool_kernel_manager = new SpoolKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
-    if (!barrel_kernel_manager)
-        barrel_kernel_manager = new BarrelKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
-    if (!ms_barrel_kernel_manager)
-        ms_barrel_kernel_manager = new MSBarrelKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
-
     if (first_time) {
-        CLDeviceManager *dman = opencl_manager->GetDeviceManager();
-        for (unsigned int i = 0; i < dman->GetDeviceNum(); i++) {
-            aut::DebugPrint("Device ", i, " : ", dman->GetDeviceName(i));
+        try {
+            OutDebugInfo("Init OpenCL");
+            if (!opencl_manager)
+                opencl_manager = new OpenCLManager(kernel_source);
+            cl::Context *context = opencl_manager->GetContext();
+            CLCommandQueueManager *cqman = opencl_manager->GetCommandQueueManager();
+
+            spool_kernel_manager = new SpoolKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
+            barrel_kernel_manager = new BarrelKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
+            ms_barrel_kernel_manager = new MSBarrelKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
+            premult_kernel_manager = new PremultKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
+            unpremult_kernel_manager = new UnpremultKernelManager(opencl_manager->GetProgram(), cqman->GetCommandQueue());
+
+            CLDeviceManager *dman = opencl_manager->GetDeviceManager();
+            for (unsigned int i = 0; i < dman->GetDeviceNum(); i++) {
+                aut::DebugPrint("Device ", i, " : ", dman->GetDeviceName(i));
+            }
+            OutDebugInfo("Build Log : ",
+                         opencl_manager->GetProgramManager()->GetBuildLog());
+            use_opencl = true;
+            OutDebugInfo("Init OpenCL complete");
+        } catch (InitOpenCLManagerException &e) {
+            OutDebugInfo(e.message());
+            use_opencl = false;
         }
-        aut::DebugPrint("Build Log : ",
-                        opencl_manager->GetProgramManager()->GetBuildLog());
         first_time = false;
     }
 
-    cl::ImageFormat fmt;
-    fmt.image_channel_data_type = CL_UNORM_INT8;
-    fmt.image_channel_order = CL_BGRA;
-    cl::Image2D image(*con, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, fmt,
-                      image_size.w, image_size.h, 0, image_data);
+    if (use_opencl) {
+        auto *context = opencl_manager->GetContext();
+        auto *command_queue_manager = opencl_manager->GetCommandQueueManager();
+        cl::ImageFormat fmt;
+        fmt.image_channel_data_type = CL_UNORM_INT8;
+        fmt.image_channel_order = CL_BGRA;
+        cl::Image2D image_0(*context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, fmt,
+                            image_size.w, image_size.h, 0, image_data);
+        cl::Image2D image_1(*context, CL_MEM_READ_WRITE, fmt,
+                            image_size.w, image_size.h);
 
-    cl::Image2D out_image(*con, CL_MEM_READ_WRITE, fmt,
-                          image_size.w, image_size.h);
-    if (parameter.spool_mode) {
-        spool_kernel_manager->CallKernel(
-            image, out_image, image_size.w, image_size.h, parameter);
-    } else {
-        if (parameter.anti_aliasing) {
-            ms_barrel_kernel_manager->CallKernel(
-                image, out_image, image_size.w, image_size.h, parameter);
+        premult_kernel_manager->CallPremult(image_0, image_1, image_size.w, image_size.h);
+
+        if (parameter.spool_mode) {
+            spool_kernel_manager->CallKernel(
+                image_1, image_0, image_size.w, image_size.h, parameter);
         } else {
-            barrel_kernel_manager->CallKernel(
-                image, out_image, image_size.w, image_size.h, parameter);
+            if (parameter.anti_aliasing) {
+                ms_barrel_kernel_manager->CallKernel(
+                    image_1, image_0, image_size.w, image_size.h, parameter);
+            } else {
+                barrel_kernel_manager->CallKernel(
+                    image_1, image_0, image_size.w, image_size.h, parameter);
+            }
         }
-    }
 
-    cqman->ReadImage2D(out_image, true, 0, 0, image_size.w, image_size.h, image_data);
+        unpremult_kernel_manager->CallUnpremult(image_0, image_1, image_size.w, image_size.h);
+
+        command_queue_manager->ReadImage2D(image_1, true, 0, 0,
+                                           image_size.w, image_size.h, image_data);
+    }
 
     aut::putpixeldata(L, image_data);
 
-    aut::DebugPrint("  Total Time : ", sw.Stop(), " ms");
+    OutDebugInfo("Total Time : ", sw.Stop(), " ms");
 
     return 0;
 }

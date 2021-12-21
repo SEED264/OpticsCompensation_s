@@ -140,4 +140,43 @@ __kernel void MultiSamplingBarrel(read_only image2d_t in_image, write_only image
     write_imagef(out_image, thread_id, pixel_data / sampled_num);
 }
 
+__kernel void Premult(read_only image2d_t in_image, write_only image2d_t out_image,
+                      int2 image_size) {
+    int2 thread_id = (int2)(
+        get_global_id(0),
+        get_global_id(1)
+    );
+    // Do nothing if coord is out of process area
+    if(!IsProcessArea(thread_id, image_size))
+        return;
+
+    float2 coords = convert_float2(thread_id);
+    float4 pixel_data = read_imagef(in_image, sampler_,
+                                    ToNormalizedCoordsf(coords, image_size));
+
+    pixel_data.xyz *= pixel_data.w;
+
+    write_imagef(out_image, thread_id, pixel_data);
+}
+
+__kernel void Unpremult(read_only image2d_t in_image, write_only image2d_t out_image,
+                        int2 image_size) {
+    int2 thread_id = (int2)(
+        get_global_id(0),
+        get_global_id(1)
+    );
+    // Do nothing if coord is out of process area
+    if(!IsProcessArea(thread_id, image_size))
+        return;
+
+    float2 coords = convert_float2(thread_id);
+    float4 pixel_data = read_imagef(in_image, sampler_,
+                                    ToNormalizedCoordsf(coords, image_size));
+
+    float alpha = pixel_data.w;
+    if (alpha != 0)
+        pixel_data.xyz /= pixel_data.w;
+
+    write_imagef(out_image, thread_id, pixel_data);
+}
 )

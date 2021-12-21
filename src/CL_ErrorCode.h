@@ -7,7 +7,7 @@
 namespace {
 
 // Error code strings
-static std::unordered_map<int, std::string> cl_ErrorCode = {
+static std::unordered_map<int, std::string> cl_error_code = {
 {CL_SUCCESS, "CL_SUCCESS"},
 {CL_DEVICE_NOT_FOUND, "CL_DEVICE_NOT_FOUND"},
 {CL_DEVICE_NOT_AVAILABLE, "CL_DEVICE_NOT_AVAILABLE"},

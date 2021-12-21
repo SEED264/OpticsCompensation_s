@@ -1,5 +1,6 @@
 #include "cl_manager.h"
 #include "debug_helper.h"
+#include "exception.h"
 
 /* CLPlatformManager */
 
@@ -44,14 +45,18 @@ CLDeviceManager::CLDeviceManager(const cl::Context *context) :
 }
 
 std::vector<cl::Device>* CLDeviceManager::GetDevices(const cl::Platform *platform) {
+    cl_int err;
     if (platform)
-        platform->getDevices(device_type_, &devices_);
+        err = platform->getDevices(device_type_, &devices_);
+    CheckCLErrorCode("Init device", err);
     return &devices_;
 }
 
 std::vector<cl::Device>* CLDeviceManager::GetDevices(const cl::Context *context) {
+    cl_int err;
     if (context)
-        devices_ = context->getInfo<CL_CONTEXT_DEVICES>();
+        devices_ = context->getInfo<CL_CONTEXT_DEVICES>(&err);
+    CheckCLErrorCode("Init device", err);
     return &devices_;
 }
 void CLDeviceManager::SetDeviceType(cl_device_type device_type) {
@@ -85,12 +90,16 @@ CLContextManager::CLContextManager(cl_device_type device_type) {
 
 cl::Context* CLContextManager::CreateContextFromDevice(const cl::Device *device) {
     std::vector<cl::Device> devices = {*device};
-    context_ = new cl::Context(devices);
+    cl_int err;
+    context_ = new cl::Context(devices, nullptr, nullptr, nullptr, &err);
+    CheckCLErrorCode("Init context", err);
     return context_;
 }
 
-cl::Context* CLContextManager::CreateContextFromDeviceType(cl_device_type device_type, cl_int *err) {
-    context_ = new cl::Context(device_type, nullptr, nullptr, nullptr, err);
+cl::Context* CLContextManager::CreateContextFromDeviceType(cl_device_type device_type) {
+    cl_int err;
+    context_ = new cl::Context(device_type, nullptr, nullptr, nullptr, &err);
+    CheckCLErrorCode("Init context", err);
     return context_;
 }
 
@@ -103,7 +112,9 @@ CLCommandQueueManager::CLCommandQueueManager(const cl::Context *context) :
 
 cl::CommandQueue* CLCommandQueueManager::CreateCommandQueue(const cl::Context *context) {
     auto device = context->getInfo<CL_CONTEXT_DEVICES>()[0];
-    command_queue_ = new cl::CommandQueue(*context, device);
+    cl_int err;
+    command_queue_ = new cl::CommandQueue(*context, device, 0, &err);
+    CheckCLErrorCode("Init command queue", err);
     return command_queue_;
 }
 
@@ -170,7 +181,9 @@ void CLCommandQueueManager::FillImage2D(const cl::Image2D &image, cl_float4 fill
 /* CLProgramManager */
 
 CLProgramManager::CLProgramManager(const cl::Context *context, const std::string &source, bool build) {
-    program_ = new cl::Program(*context, source, build);
+    cl_int err;
+    program_ = new cl::Program(*context, source, build, &err);
+    CheckCLErrorCode("Init program", err);
 }
 
 std::string CLProgramManager::GetBuildLog() {
@@ -196,6 +209,7 @@ void CLKernelManager::SetCommandQueue(cl::CommandQueue *command_queue) {
 /* OpenCLManager */
 
 OpenCLManager::OpenCLManager(const std::string &kernel_source) {
+    OutDebugInfo("Init context manager");
     context_manager_ = new CLContextManager(CL_DEVICE_TYPE_GPU);
     cl::Context *context = context_manager_->GetContext();
 

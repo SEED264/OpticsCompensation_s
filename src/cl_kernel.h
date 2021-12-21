@@ -28,4 +28,18 @@ public:
                     OpticsCompensationParameter parameter);
 };
 
+class PremultKernelManager : public CLKernelManager {
+public:
+    PremultKernelManager(const cl::Program *program, cl::CommandQueue *command_queue);
+
+    void CallPremult(cl::Image2D &in_image, cl::Image2D &out_image, int w, int h);
+};
+
+class UnpremultKernelManager : public CLKernelManager {
+public:
+    UnpremultKernelManager(const cl::Program *program, cl::CommandQueue *command_queue);
+
+    void CallUnpremult(cl::Image2D &in_image, cl::Image2D &out_image, int w, int h);
+};
+
 #endif // _OPTICSCOMPENSATION_S_SRC_CL_KERNEL_H_
