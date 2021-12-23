@@ -135,7 +135,7 @@ int OpticsCompensation(lua_State *L) {
         aut::putpixeldata(L, reinterpret_cast<aut::PixelRGBA*>(image_inout.data));
     }
 
-    aut::DebugPrint("Total Time : ", sw.Stop(), " ms");
+    OutDebugInfo("Total Time : ", sw.Stop(), " ms");
 
     return 0;
 }
