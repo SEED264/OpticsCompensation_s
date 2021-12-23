@@ -119,8 +119,8 @@ __kernel void MultiSamplingBarrel(read_only image2d_t in_image, write_only image
     float2 coords_rt = CalcBarrelCoords(coords + (float2)( 0.5, -0.5), center_coords,
                                         focal_distance);
     float2 coords_lb = CalcBarrelCoords(coords + (float2)(-0.5,  0.5), center_coords,
-    float2 coords_rb = CalcBarrelCoords(coords + (float2)( 0.5,  0.5), center_coords,
                                         focal_distance);
+    float2 coords_rb = CalcBarrelCoords(coords + (float2)( 0.5,  0.5), center_coords,
                                         focal_distance);
     float4 pixel_data = (float4)0;
     int sampled_num = 0;
