@@ -35,10 +35,6 @@ BarrelKernelManager::BarrelKernelManager(const cl::Program *program, cl::Command
 
 void BarrelKernelManager::CallKernel(cl::Image2D &in_image, cl::Image2D &out_image, int w, int h,
                                     OpticsCompensationParameter parameter) {
-    // Do nothing if amount is 1.0
-    if (parameter.amount == 1.0)
-        return;
-
     cl_int2 image_size = {w, h};
     cl_float2 center_coords = {
         (w - 1) / 2.0f + parameter.center_pos.x,
@@ -66,10 +62,6 @@ MSBarrelKernelManager::MSBarrelKernelManager(const cl::Program *program, cl::Com
 
 void MSBarrelKernelManager::CallKernel(cl::Image2D &in_image, cl::Image2D &out_image, int w, int h,
                                     OpticsCompensationParameter parameter) {
-    // Do nothing if amount is 1.0
-    if (parameter.amount == 1.0)
-        return;
-
     cl_int2 image_size = {w, h};
     cl_float2 center_coords = {
         (w - 1) / 2.0f + parameter.center_pos.x,

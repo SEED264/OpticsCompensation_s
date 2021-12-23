@@ -96,13 +96,18 @@ int OpticsCompensation(lua_State *L) {
             spool_kernel_manager->CallKernel(
                 image_1, image_0, image_size.w, image_size.h, parameter);
         } else {
-            if (parameter.anti_aliasing) {
-                ms_barrel_kernel_manager->CallKernel(
-                    image_1, image_0, image_size.w, image_size.h, parameter);
+            if (parameter.amount != 1.0) {
+                if (parameter.anti_aliasing) {
+                    ms_barrel_kernel_manager->CallKernel(
+                        image_1, image_0, image_size.w, image_size.h, parameter);
+                } else {
+                    barrel_kernel_manager->CallKernel(
+                        image_1, image_0, image_size.w, image_size.h, parameter);
+                }
             } else {
-                barrel_kernel_manager->CallKernel(
-                    image_1, image_0, image_size.w, image_size.h, parameter);
-            }
+                std::vector<uchar> empty_image(image_size.w * image_size.h * 4, 0);
+                command_queue_manager->WriteImage2D(image_0, true, 0, 0,
+                                                    image_size.w, image_size.h, empty_image.data());            }
         }
 
         unpremult_kernel_manager->CallUnpremult(image_0, image_1, image_size.w, image_size.h);
@@ -114,7 +119,7 @@ int OpticsCompensation(lua_State *L) {
     } else {
         cv::Size mat_size(image_size.w, image_size.h);
         cv::Mat image_inout(mat_size, CV_8UC4, image_data);
-        cv::Mat image_0(mat_size, CV_32FC4);
+        cv::Mat image_0(mat_size, CV_32FC4, cv::Scalar::all(0));
         cv::Mat image_1(mat_size, CV_32FC4, cv::Scalar::all(0));
 
         PremultKernel(image_inout, image_0);
@@ -130,7 +135,7 @@ int OpticsCompensation(lua_State *L) {
         aut::putpixeldata(L, reinterpret_cast<aut::PixelRGBA*>(image_inout.data));
     }
 
-    OutDebugInfo("Total Time : ", sw.Stop(), " ms");
+    aut::DebugPrint("Total Time : ", sw.Stop(), " ms");
 
     return 0;
 }
