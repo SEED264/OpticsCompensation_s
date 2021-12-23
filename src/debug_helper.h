@@ -11,7 +11,7 @@
 #define RETURN_IN_RELEASE
 #endif
 
-void DebugPrintContextInfo(cl::Context context) {
+inline void DebugPrintContextInfo(cl::Context context) {
     RETURN_IN_RELEASE
     // Get count of devices in context
     auto device_count = context.getInfo<CL_CONTEXT_NUM_DEVICES>();

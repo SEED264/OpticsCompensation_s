@@ -10,8 +10,8 @@ void SpoolKernelManager::CallKernel(cl::Image2D &in_image, cl::Image2D &out_imag
                                     OpticsCompensationParameter parameter) {
     cl_int2 image_size = {w, h};
     cl_float2 center_coords = {
-        w / 2.0f + parameter.center_pos.x,
-        h / 2.0f + parameter.center_pos.y
+        (w - 1) / 2.0f + parameter.center_pos.x,
+        (h - 1) / 2.0f + parameter.center_pos.y
     };
     int block_size = 16;
     kernel_->setArg(0, in_image);
@@ -41,8 +41,8 @@ void BarrelKernelManager::CallKernel(cl::Image2D &in_image, cl::Image2D &out_ima
 
     cl_int2 image_size = {w, h};
     cl_float2 center_coords = {
-        w / 2.0f + parameter.center_pos.x,
-        h / 2.0f + parameter.center_pos.y
+        (w - 1) / 2.0f + parameter.center_pos.x,
+        (h - 1) / 2.0f + parameter.center_pos.y
     };
     int block_size = 16;
     kernel_->setArg(0, in_image);
@@ -72,8 +72,8 @@ void MSBarrelKernelManager::CallKernel(cl::Image2D &in_image, cl::Image2D &out_i
 
     cl_int2 image_size = {w, h};
     cl_float2 center_coords = {
-        w / 2.0f + parameter.center_pos.x,
-        h / 2.0f + parameter.center_pos.y
+        (w - 1) / 2.0f + parameter.center_pos.x,
+        (h - 1) / 2.0f + parameter.center_pos.y
     };
     int block_size = 16;
     kernel_->setArg(0, in_image);
@@ -81,7 +81,7 @@ void MSBarrelKernelManager::CallKernel(cl::Image2D &in_image, cl::Image2D &out_i
     kernel_->setArg(2, image_size);
     kernel_->setArg(3, center_coords);
     kernel_->setArg(4, parameter.CalcFocalDistance());
-    kernel_->setArg(5, 8);
+    kernel_->setArg(5, 4);
     cl::NDRange global(
         static_cast<std::size_t>(std::ceil(w / static_cast<float>(block_size))) * block_size,
         static_cast<std::size_t>(std::ceil(h / static_cast<float>(block_size))) * block_size,

@@ -29,7 +29,7 @@ inline float2 LinearInterpolation2D(float2 a, float2 b, float alpha) {
 }
 
 inline float2 CalcSampleCoords(float2 coords_lt, float2 coords_rt,
-                               float2 coords_rb, float2 coords_lb,
+                               float2 coords_lb, float2 coords_rb,
                                float2 alpha) {
     float2 interpolated_top    = LinearInterpolation2D(coords_lt, coords_rt, alpha.x);
     float2 interpolated_bottom = LinearInterpolation2D(coords_lb, coords_rb, alpha.x);
@@ -118,19 +118,18 @@ __kernel void MultiSamplingBarrel(read_only image2d_t in_image, write_only image
                                         focal_distance);
     float2 coords_rt = CalcBarrelCoords(coords + (float2)( 0.5, -0.5), center_coords,
                                         focal_distance);
+    float2 coords_lb = CalcBarrelCoords(coords + (float2)(-0.5,  0.5), center_coords,
     float2 coords_rb = CalcBarrelCoords(coords + (float2)( 0.5,  0.5), center_coords,
                                         focal_distance);
-    float2 coords_lb = CalcBarrelCoords(coords + (float2)(-0.5,  0.5), center_coords,
                                         focal_distance);
     float4 pixel_data = (float4)0;
     int sampled_num = 0;
-    for (int y = 0; y < max_sampling_per_dimension; y++) {
-        for (int x = 0; x < max_sampling_per_dimension; x++) {
-            float2 alpha = (float2)(
-                (float)(x) / (max_sampling_per_dimension),
-                (float)(y) / (max_sampling_per_dimension)
-            );
-            coords = CalcSampleCoords(coords_lt, coords_rt, coords_rb, coords_lb, alpha);
+    for (float y = 1.f / (max_sampling_per_dimension * 2); y < 1;
+         y += (1.f / max_sampling_per_dimension)) {
+        for (float x = 1.f / (max_sampling_per_dimension * 2); x < 1;
+             x += (1.f / max_sampling_per_dimension)) {
+            float2 alpha = (float2)(x, y);
+            coords = CalcSampleCoords(coords_lt, coords_rt, coords_lb, coords_rb, alpha);
             pixel_data += read_imagef(in_image, sampler_,
                                       ToNormalizedCoordsf(coords, image_size));
             sampled_num++;

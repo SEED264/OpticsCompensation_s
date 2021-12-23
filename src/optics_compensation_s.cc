@@ -2,8 +2,10 @@
 #include <aut/AUL_Utils.h>
 #include <CL/cl.hpp>
 #include <lua.hpp>
+#include <opencv2/opencv.hpp>
 #include "cl_manager.h"
 #include "cl_kernel.h"
+#include "cpu_kernel.h"
 #include "exception.h"
 #include "out_debug.h"
 #include "parameter.h"
@@ -43,6 +45,7 @@ int OpticsCompensation(lua_State *L) {
         parameter.spool_mode = true;
         parameter.amount *= -1;
     }
+    aut::DebugPrint("AA : ", parameter.anti_aliasing);
 
     aut::PixelRGBA *image_data;
     aut::Size2D image_size;
@@ -107,11 +110,29 @@ int OpticsCompensation(lua_State *L) {
 
         command_queue_manager->ReadImage2D(image_1, true, 0, 0,
                                            image_size.w, image_size.h, image_data);
+
+        aut::putpixeldata(L, image_data);
+    } else {
+        cv::Size mat_size(image_size.w, image_size.h);
+        cv::Mat image_inout(mat_size, CV_8UC4, image_data);
+        cv::Mat image_0(mat_size, CV_32FC4);
+        cv::Mat image_1(mat_size, CV_32FC4, cv::Scalar::all(0));
+
+        PremultKernel(image_inout, image_0);
+
+        if (parameter.spool_mode) {
+            SpoolCPUKernel(image_0, image_1, image_size, parameter);
+        } else {
+            aut::DebugPrint("AA : ", parameter.anti_aliasing);
+            BarrelCPUKernel(image_0, image_1, image_size, parameter);
+        }
+
+        UnpremultKernel(image_1, image_inout);
+
+        aut::putpixeldata(L, reinterpret_cast<aut::PixelRGBA*>(image_inout.data));
     }
 
-    aut::putpixeldata(L, image_data);
-
-    OutDebugInfo("Total Time : ", sw.Stop(), " ms");
+    aut::DebugPrint("Total Time : ", sw.Stop(), " ms");
 
     return 0;
 }

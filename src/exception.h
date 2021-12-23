@@ -1,7 +1,7 @@
 #include <exception>
 #include <string>
 #include <CL/cl.hpp>
-#include "CL_ErrorCode.h"
+#include "cl_error_code.h"
 
 class InitOpenCLManagerException : public std::exception {
 public:
