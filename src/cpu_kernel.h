@@ -9,6 +9,7 @@
 #include <opencv2/opencv.hpp>
 #include "parameter.h"
 
+// Sampling for integer coords
 template<typename T> cv::Vec<T, 4> SamplingPixel(const cv::Mat &img, int x, int y,
                                                  const aut::Size2D &image_size) {
     // Return all 0 if pt is out of range
@@ -18,9 +19,9 @@ template<typename T> cv::Vec<T, 4> SamplingPixel(const cv::Mat &img, int x, int 
     return img.ptr<cv::Vec<T, 4>>(y)[x];
 }
 
+// Sampling for fractional coords
 template<typename T> cv::Vec4f SamplingPixel(const cv::Mat &img, float x, float y,
                                              const aut::Size2D &image_size) {
-    float dummy;
     float dx = (x >= 0) ? std::fmod(x, 1.f) : 1.f - std::abs(std::fmod(x, 1.f));
     float dy = (y >= 0) ? std::fmod(y, 1.f) : 1.f - std::abs(std::fmod(y, 1.f));
 

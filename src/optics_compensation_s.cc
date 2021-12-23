@@ -45,7 +45,6 @@ int OpticsCompensation(lua_State *L) {
         parameter.spool_mode = true;
         parameter.amount *= -1;
     }
-    aut::DebugPrint("AA : ", parameter.anti_aliasing);
 
     aut::PixelRGBA *image_data;
     aut::Size2D image_size;
@@ -74,7 +73,7 @@ int OpticsCompensation(lua_State *L) {
             use_opencl = true;
             OutDebugInfo("Init OpenCL complete");
         } catch (InitOpenCLManagerException &e) {
-            OutDebugInfo(e.message());
+            aut::DebugPrint(e.message());
             use_opencl = false;
         }
         first_time = false;
@@ -123,7 +122,6 @@ int OpticsCompensation(lua_State *L) {
         if (parameter.spool_mode) {
             SpoolCPUKernel(image_0, image_1, image_size, parameter);
         } else {
-            aut::DebugPrint("AA : ", parameter.anti_aliasing);
             BarrelCPUKernel(image_0, image_1, image_size, parameter);
         }
 
@@ -132,7 +130,7 @@ int OpticsCompensation(lua_State *L) {
         aut::putpixeldata(L, reinterpret_cast<aut::PixelRGBA*>(image_inout.data));
     }
 
-    aut::DebugPrint("Total Time : ", sw.Stop(), " ms");
+    OutDebugInfo("Total Time : ", sw.Stop(), " ms");
 
     return 0;
 }

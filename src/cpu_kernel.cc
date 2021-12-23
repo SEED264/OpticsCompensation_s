@@ -50,6 +50,7 @@ void SpoolCPUKernel(const cv::Mat &in_image, const cv::Mat &out_image,
         (image_size.w - 1) / 2.f - parameter.center_pos.x,
         (image_size.h - 1) / 2.f - parameter.center_pos.y
     );
+
     #pragma omp parallel for
     for (int y = 0; y < image_size.h; y++) {
         #pragma omp parallel for
@@ -73,12 +74,11 @@ void BarrelCPUKernel(const cv::Mat &in_image, const cv::Mat &out_image,
     if (parameter.amount == 1)
         return;
 
-    aut::DebugPrint("AA : ", parameter.anti_aliasing);
-
     glm::vec2 center_coord(
         (image_size.w - 1) / 2.f - parameter.center_pos.x,
         (image_size.h - 1) / 2.f - parameter.center_pos.y
     );
+
     auto focal_distance = parameter.CalcFocalDistance();
     #pragma omp parallel for
     for (int y = 0; y < image_size.h; y++) {
@@ -87,6 +87,7 @@ void BarrelCPUKernel(const cv::Mat &in_image, const cv::Mat &out_image,
             glm::vec2 coord(x, y);
             auto out_pixel = reinterpret_cast<cv::Vec4f*>(out_image.data) + y * image_size.w + x;
             if (parameter.anti_aliasing) {
+                // Calculate the coords of the corners.
                 auto coord_lt = CalcBarrelCoord(glm::vec2(coord.x - 0.5f, coord.y - 0.5f),
                                                 center_coord, focal_distance);
                 auto coord_rt = CalcBarrelCoord(glm::vec2(coord.x + 0.5f, coord.y - 0.5f),
@@ -96,6 +97,7 @@ void BarrelCPUKernel(const cv::Mat &in_image, const cv::Mat &out_image,
                 auto coord_rb = CalcBarrelCoord(glm::vec2(coord.x + 0.5f, coord.y + 0.5f),
                                                 center_coord, focal_distance);
 
+                // Sampling multiple times for anti-aliasing
                 cv::Vec4f pixel(cv::Scalar::all(0));
                 int sampled_num = 0;
                 for (float sy = 1.f / SAMPLE_NUM / 2; sy < 1; sy += (1.f / SAMPLE_NUM)) {

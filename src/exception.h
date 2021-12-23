@@ -5,15 +5,18 @@
 
 class InitOpenCLManagerException : public std::exception {
 public:
-    InitOpenCLManagerException(const std::string &where, cl_uint code) {}
+    InitOpenCLManagerException(const std::string &where, cl_uint code)
+        : where_(where),
+          code_(code) {}
 
     std::string message() const {
-        return (std::string("Failed init OpenCLManager at ") + where + " : " + cl_error_code[code]).c_str();
+        return (std::string("Failed init OpenCLManager at ") + where_ + " : " +
+               cl_error_code[code_]).c_str();
     }
 
 private:
-    std::string where;
-    cl_uint code;
+    std::string where_;
+    cl_uint code_;
 };
 
 inline void CheckCLErrorCode(const std::string &where, cl_int code) {
