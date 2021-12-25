@@ -8,8 +8,8 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif // NOMINMAX
-#include <delayimp.h>
 #include <windows.h>
+#include <delayimp.h>
 
 class CLPlatformManager {
 public:
