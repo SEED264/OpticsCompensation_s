@@ -33,9 +33,13 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
             /MT /Ox
         >
         /openmp:experimental
+        /MP
         /wd4018
     )
-    target_link_options(${PROJECT_NAME} PRIVATE /ignore:4099)
+    target_link_options(${PROJECT_NAME} PRIVATE
+        /DELAYLOAD:OpenCL.dll
+        /ignore:4099
+    )
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -stdlib=libc++ -m32)
     target_link_options(${PROJECT_NAME} PRIVATE -m32)

@@ -1,9 +1,15 @@
 #ifndef _OPTICSCOMPENSATION_S_SRC_CL_MANAGER_H_
 #define _OPTICSCOMPENSATION_S_SRC_CL_MANAGER_H_
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <CL/cl.hpp>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+#include <delayimp.h>
+#include <windows.h>
 
 class CLPlatformManager {
 public:
@@ -144,5 +150,15 @@ private:
     CLCommandQueueManager *command_queue_manager_;
     CLProgramManager *program_manager_;
 };
+
+inline bool LoadOpenCLDLL() {
+    HRESULT result = __HrLoadAllImportsForDll("OpenCL.dll");
+
+    if (FAILED(result)) {
+        throw std::runtime_error("Failed to load OpenCL.dll");
+    }
+
+    return true;
+}
 
 #endif // _OPTICSCOMPENSATION_S_SRC_CL_MANAGER_H_

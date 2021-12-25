@@ -53,6 +53,7 @@ int OpticsCompensation(lua_State *L) {
     if (first_time) {
         try {
             OutDebugInfo("Init OpenCL");
+            LoadOpenCLDLL();
             if (!opencl_manager)
                 opencl_manager = new OpenCLManager(kernel_source);
             cl::Context *context = opencl_manager->GetContext();
@@ -74,6 +75,9 @@ int OpticsCompensation(lua_State *L) {
             OutDebugInfo("Init OpenCL complete");
         } catch (InitOpenCLManagerException &e) {
             aut::DebugPrint(e.message());
+            use_opencl = false;
+        } catch (std::runtime_error &e) {
+            aut::DebugPrint(e.what());
             use_opencl = false;
         }
         first_time = false;
