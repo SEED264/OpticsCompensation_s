@@ -33,6 +33,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
             /MT /Ox
         >
         /openmp:experimental
+        /EHa
         /MP
         /wd4018
     )

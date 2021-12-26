@@ -151,14 +151,19 @@ private:
     CLProgramManager *program_manager_;
 };
 
-inline bool LoadOpenCLDLL() {
+inline void LoadOpenCLDLL() {
+    bool success = false;
+    try {
     HRESULT result = __HrLoadAllImportsForDll("OpenCL.dll");
-
-    if (FAILED(result)) {
-        throw std::runtime_error("Failed to load OpenCL.dll");
+        success = SUCCEEDED(result);
+    } catch (...) {
+        success = false;
     }
 
-    return true;
+    // Throw exception if failed to load OpenCL.dll
+    if (!success) {
+        throw std::runtime_error("Failed to load OpenCL.dll");
+    }
 }
 
 #endif // _OPTICSCOMPENSATION_S_SRC_CL_MANAGER_H_

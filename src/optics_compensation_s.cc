@@ -24,7 +24,7 @@ static PremultKernelManager *premult_kernel_manager = nullptr;
 static UnpremultKernelManager *unpremult_kernel_manager = nullptr;
 
 bool first_time = true;
-bool use_opencl = true;
+bool use_opencl = false;
 
 int OpticsCompensation(lua_State *L) {
     StopWatch sw(true);
